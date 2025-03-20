@@ -1,2 +1,1 @@
-# tennisconect
-tennis app development
+# TennisConnect 🎾
