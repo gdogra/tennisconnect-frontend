@@ -1,35 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./Navbar";
+import LandingPage from "./LandingPage";
+import Login from "./Login";
+import Register from "./Register";
+import PlayersList from "./PlayersList";
+import Dashboard from "./Dashboard";
+import ChallengeForm from "./ChallengeForm";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    return storedUser && token ? JSON.parse(storedUser) : null;
+  });
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  };
+
+  // Auto-logout if JWT is expired
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const expiry = payload.exp * 1000;
+    const now = Date.now();
+
+    if (now >= expiry) {
+      handleLogout();
+    } else {
+      const timeout = setTimeout(handleLogout, expiry - now);
+      return () => clearTimeout(timeout);
+    }
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Router>
+      <Navbar user={user} onLogout={handleLogout} />
+
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login onLogin={setUser} />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/players" element={user ? <PlayersList user={user} /> : <Navigate to="/login" />} />
+        <Route path="/dashboard" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
+        <Route path="/challenge/:playerId" element={user ? <ChallengeForm user={user} /> : <Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
