@@ -1,48 +1,91 @@
 import React, { useEffect, useState } from "react";
 
-export default function ReceivedChallenges({ userId }) {
+export default function ReceivedChallenges({ userId, onActivity }) {
   const [challenges, setChallenges] = useState([]);
+  const [collapsed, setCollapsed] = useState(false);
   const [error, setError] = useState(null);
-  const [expanded, setExpanded] = useState(true);
+
+  const fetchChallenges = () => {
+    const token = localStorage.getItem("token");
+    fetch(`http://localhost:5001/dashboard/received-challenges/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setChallenges(data);
+        }
+      })
+      .catch(() => setError("❌ Network error while fetching received challenges"));
+  };
 
   useEffect(() => {
-    const fetchChallenges = async () => {
-      try {
-        const res = await fetch(`http://localhost:5001/challenges/received/${userId}`);
-        const data = await res.json();
-        if (res.ok) {
-          setChallenges(data);
-        } else {
-          setError(data.error || "Unknown error");
-        }
-      } catch (err) {
-        setError("Network error while fetching received challenges");
-      }
-    };
     fetchChallenges();
   }, [userId]);
 
+  const handleResponse = (challengeId, status, opponentName) => {
+    const token = localStorage.getItem("token");
+    fetch(`http://localhost:5001/challenges/${challengeId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        fetchChallenges();
+        if (onActivity) onActivity(`${status} challenge`, opponentName);
+      });
+  };
+
   return (
-    <div className="bg-white rounded shadow p-4 mt-6">
-      <h2 className="text-xl font-semibold mb-2 cursor-pointer" onClick={() => setExpanded(!expanded)}>
-        📥 Received Challenges {expanded ? "−" : "+"}
-      </h2>
-      {expanded && (
-        <>
+    <div className="border rounded p-4">
+      <div
+        className="cursor-pointer font-semibold text-lg flex justify-between items-center"
+        onClick={() => setCollapsed(!collapsed)}
+      >
+        📥 Received Challenges
+        <span>{collapsed ? "+" : "−"}</span>
+      </div>
+      {!collapsed && (
+        <div className="mt-2 space-y-2">
           {error ? (
-            <p className="text-red-500">❌ {error}</p>
+            <p className="text-red-500">{error}</p>
           ) : challenges.length === 0 ? (
-            <p className="text-gray-600">No challenges received.</p>
+            <p className="text-gray-500">No challenges received.</p>
           ) : (
-            <ul className="space-y-2">
-              {challenges.map((ch, index) => (
-                <li key={index} className="border p-2 rounded">
-                  From: <strong>{ch.sender}</strong> | Status: {ch.status}
-                </li>
-              ))}
-            </ul>
+            challenges.map((c, i) => (
+              <div
+                key={i}
+                className="flex justify-between items-center border p-2 rounded text-sm"
+              >
+                <span>
+                  From: <strong>{c.sender}</strong> — <em>{c.status}</em>
+                </span>
+                {c.status === "Pending" && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => handleResponse(c.id, "Accepted", c.sender)}
+                      className="bg-green-500 text-white px-2 py-1 rounded"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => handleResponse(c.id, "Declined", c.sender)}
+                      className="bg-red-500 text-white px-2 py-1 rounded"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
           )}
-        </>
+        </div>
       )}
     </div>
   );

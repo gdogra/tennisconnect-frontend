@@ -1,62 +1,36 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import MatchHistory from "./widgets/MatchHistory";
+import UpcomingMatches from "./widgets/UpcomingMatches";
+import PlayerRankings from "./widgets/PlayerRankings";
+import SentChallenges from "./widgets/SentChallenges";
+import ReceivedChallenges from "./widgets/ReceivedChallenges";
 
-export default function PlayersList() {
-  const [players, setPlayers] = useState([]);
-  const navigate = useNavigate();
+const Dashboard = () => {
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    const stored = localStorage.getItem("user");
+    if (stored) setUser(JSON.parse(stored));
+  }, []);
 
-    fetch("http://localhost:5001/players", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => res.json())
-      .then(data => setPlayers(data))
-      .catch(err => console.error("Error fetching players:", err));
-  }, [navigate]);
-
-  const handleChallenge = (opponentId) => {
-    navigate(`/challenge/${opponentId}`);
-  };
+  if (!user) return <div className="p-4">Loading user...</div>;
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">🎾 Players List</h2>
-      <table className="min-w-full border">
-        <thead>
-          <tr className="bg-gray-200 text-left">
-            <th className="p-2 border">Name</th>
-            <th className="p-2 border">Skill Level</th>
-            <th className="p-2 border">City</th>
-            <th className="p-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {players.map(player => (
-            <tr key={player.id}>
-              <td className="p-2 border">{player.first_name} {player.last_name}</td>
-              <td className="p-2 border">{player.skill_level}</td>
-              <td className="p-2 border">{player.city}</td>
-              <td className="p-2 border">
-                <button
-                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                  onClick={() => handleChallenge(player.id)}
-                >
-                  Challenge
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="p-4 max-w-7xl mx-auto">
+      <h2 className="text-2xl font-bold text-blue-700 mb-6">
+        🎾 Welcome, {user.first_name}!
+      </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <MatchHistory userId={user.id} />
+        <UpcomingMatches userId={user.id} />
+        <PlayerRankings />
+        <SentChallenges userId={user.id} />
+        <ReceivedChallenges userId={user.id} />
+      </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
 
