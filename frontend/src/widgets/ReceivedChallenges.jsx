@@ -1,92 +1,97 @@
 import React, { useEffect, useState } from "react";
 
-export default function ReceivedChallenges({ userId, onActivity }) {
+export default function ReceivedChallenges({ onToast, onActivity }) {
   const [challenges, setChallenges] = useState([]);
   const [collapsed, setCollapsed] = useState(false);
-  const [error, setError] = useState(null);
 
-  const fetchChallenges = () => {
-    const token = localStorage.getItem("token");
-    fetch(`http://localhost:5001/dashboard/received-challenges/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setChallenges(data);
+  const fetchChallenges = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user"));
+      const res = await fetch(
+        `http://localhost:5001/dashboard/received-challenges/${user.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      })
-      .catch(() => setError("❌ Network error while fetching received challenges"));
+      );
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setChallenges(data);
+    } catch (err) {
+      setChallenges([]);
+      onToast?.("❌ Network error while fetching received challenges", "error");
+    }
   };
 
   useEffect(() => {
     fetchChallenges();
-  }, [userId]);
+  }, []);
 
-  const handleResponse = (challengeId, status, opponentName) => {
-    const token = localStorage.getItem("token");
-    fetch(`http://localhost:5001/challenges/${challengeId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ status }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        fetchChallenges();
-        if (onActivity) onActivity(`${status} challenge`, opponentName);
+  const handleUpdateStatus = async (id, newStatus, senderName) => {
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`http://localhost:5001/dashboard/update-challenge/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
       });
+
+      onToast?.(`✅ Challenge ${newStatus.toLowerCase()}`, "success");
+      onActivity?.(`${newStatus} challenge`, senderName);
+      fetchChallenges(); // Refresh
+    } catch (err) {
+      onToast?.("❌ Failed to update challenge", "error");
+    }
   };
 
   return (
-    <div className="border rounded p-4">
-      <div
-        className="cursor-pointer font-semibold text-lg flex justify-between items-center"
+    <div className="bg-white shadow-md rounded p-4 mt-4">
+      <h2
+        className="text-xl font-semibold cursor-pointer"
         onClick={() => setCollapsed(!collapsed)}
       >
-        📥 Received Challenges
-        <span>{collapsed ? "+" : "−"}</span>
-      </div>
-      {!collapsed && (
-        <div className="mt-2 space-y-2">
-          {error ? (
-            <p className="text-red-500">{error}</p>
-          ) : challenges.length === 0 ? (
-            <p className="text-gray-500">No challenges received.</p>
-          ) : (
-            challenges.map((c, i) => (
-              <div
-                key={i}
-                className="flex justify-between items-center border p-2 rounded text-sm"
-              >
-                <span>
-                  From: <strong>{c.sender}</strong> — <em>{c.status}</em>
-                </span>
+        📥 Received Challenges {collapsed ? "+" : "−"}
+      </h2>
+      {!collapsed &&
+        (challenges.length === 0 ? (
+          <p className="text-gray-500 mt-2">No challenges received.</p>
+        ) : (
+          <ul className="mt-2 space-y-3">
+            {challenges.map((c) => (
+              <li key={c.id} className="flex justify-between items-center">
+                <div>
+                  From {c.sender_name} —{" "}
+                  <span className="italic text-sm">{c.status}</span>
+                </div>
                 {c.status === "Pending" && (
                   <div className="space-x-2">
                     <button
-                      onClick={() => handleResponse(c.id, "Accepted", c.sender)}
-                      className="bg-green-500 text-white px-2 py-1 rounded"
+                      className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-sm"
+                      onClick={() =>
+                        handleUpdateStatus(c.id, "Accepted", c.sender_name)
+                      }
                     >
                       Accept
                     </button>
                     <button
-                      onClick={() => handleResponse(c.id, "Declined", c.sender)}
-                      className="bg-red-500 text-white px-2 py-1 rounded"
+                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm"
+                      onClick={() =>
+                        handleUpdateStatus(c.id, "Declined", c.sender_name)
+                      }
                     >
                       Decline
                     </button>
                   </div>
                 )}
-              </div>
-            ))
-          )}
-        </div>
-      )}
+              </li>
+            ))}
+          </ul>
+        ))}
     </div>
   );
 }

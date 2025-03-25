@@ -1,57 +1,71 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Navbar from "./Navbar";
-import LandingPage from "./LandingPage";
-import Login from "./Login";
-import Register from "./Register";
-import PlayersList from "./PlayersList";
-import Dashboard from "./Dashboard";
-import ChallengeForm from "./ChallengeForm";
+import MatchHistory from "./widgets/MatchHistory";
+import UpcomingMatches from "./widgets/UpcomingMatches";
+import PlayerRankings from "./widgets/PlayerRankings";
+import SentChallenges from "./widgets/SentChallenges";
+import ReceivedChallenges from "./widgets/ReceivedChallenges";
 
-export default function App() {
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
-    return storedUser && token ? JSON.parse(storedUser) : null;
-  });
+export default function Dashboard() {
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+  const [notifications, setNotifications] = useState([]);
+  const [toast, setToast] = useState(null);
 
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  // Show toast for a few seconds
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  // Add persistent notification
+  const addNotification = (message) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const entry = `${timestamp}: ${message}`;
+    setNotifications((prev) => [entry, ...prev.slice(0, 4)]); // keep last 5
   };
 
-  // Auto-logout if JWT is expired
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const expiry = payload.exp * 1000;
-    const now = Date.now();
-
-    if (now >= expiry) {
-      handleLogout();
-    } else {
-      const timeout = setTimeout(handleLogout, expiry - now);
-      return () => clearTimeout(timeout);
-    }
-  }, []);
+  const handleChallengeUpdate = (message) => {
+    setToast(message);
+    addNotification(message);
+  };
 
   return (
-    <Router>
-      <Navbar user={user} onLogout={handleLogout} />
+    <div className="max-w-5xl mx-auto mt-10 px-4">
+      <h1 className="text-3xl font-bold mb-6 text-center">
+        🎾 {user?.first_name}'s Dashboard
+      </h1>
 
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login onLogin={setUser} />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/players" element={user ? <PlayersList user={user} /> : <Navigate to="/login" />} />
-        <Route path="/dashboard" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
-        <Route path="/challenge/:playerId" element={user ? <ChallengeForm user={user} /> : <Navigate to="/login" />} />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Router>
+      {toast && (
+        <div className="bg-green-500 text-white text-center py-2 rounded mb-4 shadow">
+          {toast}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <MatchHistory userId={user?.id} />
+        <UpcomingMatches userId={user?.id} />
+        <PlayerRankings />
+
+        <SentChallenges userId={user?.id} onStatusUpdate={handleChallengeUpdate} />
+        <ReceivedChallenges userId={user?.id} onStatusUpdate={handleChallengeUpdate} />
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-2">🔔 Recent Activity</h2>
+        {notifications.length > 0 ? (
+          <ul className="space-y-1">
+            {notifications.map((note, idx) => (
+              <li key={idx} className="text-sm text-gray-700 bg-gray-100 rounded px-3 py-1 shadow-sm">
+                {note}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500 text-sm">No recent activity yet.</p>
+        )}
+      </div>
+    </div>
   );
 }
 

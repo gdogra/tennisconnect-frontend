@@ -1,54 +1,76 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 export default function MatchHistory({ user }) {
   const [matches, setMatches] = useState([]);
   const [collapsed, setCollapsed] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.id) return;
-
     const fetchMatches = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `http://localhost:5001/dashboard/match-history/${user.id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setMatches(res.data);
+        const res = await fetch(`http://localhost:5001/dashboard/match-history/${user.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setMatches(data);
+        } else {
+          setError(data.error || "Failed to fetch match history.");
+        }
       } catch (err) {
-        setError("❌ Failed to fetch match history.");
+        setError("❌ Network error while fetching match history.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMatches();
+    if (user?.id) fetchMatches();
   }, [user]);
 
-  if (loading) return <div className="text-gray-500">Loading match history...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  const chartData = {
+    labels: matches.map((m) => m.opponent || "Unknown"),
+    datasets: [
+      {
+        label: "Match Scores",
+        data: matches.map((m) => m.score || 0),
+        backgroundColor: "#3b82f6",
+      },
+    ],
+  };
 
   return (
-    <div className="border p-4 rounded shadow-md bg-white">
+    <div className="border p-4 rounded shadow bg-white dark:bg-gray-800">
       <h2
-        className="text-xl font-bold cursor-pointer flex justify-between items-center"
+        className="text-xl font-semibold cursor-pointer flex justify-between items-center"
         onClick={() => setCollapsed(!collapsed)}
       >
-        📜 Match History
+        📜 Match History{" "}
         <span>{collapsed ? "+" : "−"}</span>
       </h2>
+
       {!collapsed && (
-        <ul className="mt-2 space-y-2">
-          {matches.map((match) => (
-            <li key={match.id} className="bg-gray-100 p-2 rounded">
-              {match.opponent_name} ({match.opponent_level}) - {match.score} on{" "}
-              {new Date(match.date).toLocaleDateString()}
-            </li>
-          ))}
-        </ul>
+        <div className="mt-4">
+          {loading && <p className="text-gray-500">Loading match history...</p>}
+          {error && <p className="text-red-500">{error}</p>}
+          {!loading && !error && matches.length > 0 ? (
+            <Bar data={chartData} />
+          ) : (
+            !loading && !error && <p>No match history yet.</p>
+          )}
+        </div>
       )}
     </div>
   );

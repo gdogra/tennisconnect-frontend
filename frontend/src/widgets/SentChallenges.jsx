@@ -1,49 +1,55 @@
 import React, { useEffect, useState } from "react";
 
-export default function SentChallenges({ userId }) {
+export default function SentChallenges({ onToast, onActivity }) {
   const [challenges, setChallenges] = useState([]);
-  const [error, setError] = useState(null);
-  const [expanded, setExpanded] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     const fetchChallenges = async () => {
       try {
-        const res = await fetch(`http://localhost:5001/challenges/sent/${userId}`);
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user"));
+        const res = await fetch(
+          `http://localhost:5001/dashboard/sent-challenges/${user.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const data = await res.json();
-        if (res.ok) {
-          setChallenges(data);
-        } else {
-          setError(data.error || "Unknown error");
-        }
+        if (data.error) throw new Error(data.error);
+        setChallenges(data);
       } catch (err) {
-        setError("Network error while fetching sent challenges");
+        setChallenges([]);
+        onToast?.("❌ Network error while fetching sent challenges", "error");
       }
     };
+
     fetchChallenges();
-  }, [userId]);
+  }, []);
 
   return (
-    <div className="bg-white rounded shadow p-4 mt-6">
-      <h2 className="text-xl font-semibold mb-2 cursor-pointer" onClick={() => setExpanded(!expanded)}>
-        📤 Sent Challenges {expanded ? "−" : "+"}
+    <div className="bg-white shadow-md rounded p-4 mt-4">
+      <h2
+        className="text-xl font-semibold cursor-pointer"
+        onClick={() => setCollapsed(!collapsed)}
+      >
+        📤 Sent Challenges {collapsed ? "+" : "−"}
       </h2>
-      {expanded && (
-        <>
-          {error ? (
-            <p className="text-red-500">❌ {error}</p>
-          ) : challenges.length === 0 ? (
-            <p className="text-gray-600">No challenges sent.</p>
-          ) : (
-            <ul className="space-y-2">
-              {challenges.map((ch, index) => (
-                <li key={index} className="border p-2 rounded">
-                  To: <strong>{ch.opponent}</strong> | Status: {ch.status}
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
-      )}
+      {!collapsed &&
+        (challenges.length === 0 ? (
+          <p className="text-gray-500 mt-2">No challenges sent.</p>
+        ) : (
+          <ul className="mt-2 space-y-1">
+            {challenges.map((c, idx) => (
+              <li key={idx} className="text-gray-700">
+                To {c.receiver_name} —{" "}
+                <span className="italic text-sm">{c.status}</span>
+              </li>
+            ))}
+          </ul>
+        ))}
     </div>
   );
 }
