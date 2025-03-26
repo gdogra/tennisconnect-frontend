@@ -1,39 +1,110 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
-const Navbar = () => {
-  const navigate = useNavigate();
+export default function Navbar() {
   const user = JSON.parse(localStorage.getItem("user"));
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    toast.success("👋 Logged out successfully!");
     navigate("/login");
   };
 
-  return (
-    <nav className="bg-blue-700 text-white px-4 py-3 shadow-md">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Link
-          to="/"
-          className="text-xl font-semibold tracking-wide hover:text-yellow-300"
-        >
-          🎾 TennisConnect
-        </Link>
+  const toggleDropdown = () => setDropdownOpen((prev) => !prev);
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
 
-        <div className="md:hidden">
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="focus:outline-none"
-          >
+  useEffect(() => {
+    const close = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+
+  const isActive = (path) =>
+    location.pathname === path
+      ? "text-blue-600 font-semibold"
+      : "text-gray-700 hover:text-blue-600";
+
+  const initials = user ? `${user.first_name[0]}${user.last_name[0]}` : "??";
+  const avatar = user?.profile_picture || null;
+
+  return (
+    <nav className="bg-white shadow-sm px-4 py-3">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="text-xl font-bold text-green-600">🎾 TennisConnect</div>
+
+        {/* Desktop Menu */}
+        <div className="hidden md:flex gap-6 items-center">
+          <Link to="/" className={isActive("/")}>Home</Link>
+          {user && token && (
+            <>
+              <Link to="/players" className={isActive("/players")}>Players</Link>
+              <Link to="/dashboard" className={isActive("/dashboard")}>Dashboard</Link>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={toggleDropdown}
+                  className="w-9 h-9 rounded-full overflow-hidden bg-blue-500 text-white flex items-center justify-center"
+                  title={`${user.first_name} ${user.last_name}`}
+                >
+                  {avatar ? (
+                    <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-sm font-bold">{initials}</span>
+                  )}
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow-md z-50">
+                    <div className="px-4 py-2 text-sm text-gray-600">
+                      {user.first_name} {user.last_name}
+                    </div>
+                    <hr />
+                    <Link
+                      to={`/players/${user.id}`}
+                      className="block px-4 py-2 text-sm hover:bg-gray-100"
+                    >
+                      My Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+          {!user && !token && (
+            <>
+              <Link to="/login" className={isActive("/login")}>Login</Link>
+              <Link to="/register" className={isActive("/register")}>Register</Link>
+            </>
+          )}
+        </div>
+
+        {/* Mobile Hamburger */}
+        <div className="md:hidden flex items-center">
+          <button onClick={toggleMenu} className="text-gray-600 focus:outline-none">
             <svg
-              className="w-6 h-6 text-white"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              {isMenuOpen ? (
+              {menuOpen ? (
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -51,75 +122,29 @@ const Navbar = () => {
             </svg>
           </button>
         </div>
-
-        <div className="hidden md:flex space-x-6 items-center">
-          <Link to="/" className="hover:text-yellow-300">
-            Home
-          </Link>
-          <Link to="/players" className="hover:text-yellow-300">
-            Players
-          </Link>
-          {user ? (
-            <>
-              <Link to="/dashboard" className="hover:text-yellow-300">
-                Dashboard
-              </Link>
-              <button
-                onClick={logout}
-                className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="hover:text-yellow-300">
-                Login
-              </Link>
-              <Link to="/register" className="hover:text-yellow-300">
-                Register
-              </Link>
-            </>
-          )}
-        </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden mt-2 space-y-2 px-2">
-          <Link to="/" className="block hover:text-yellow-300">
-            Home
-          </Link>
-          <Link to="/players" className="block hover:text-yellow-300">
-            Players
-          </Link>
-          {user ? (
+      {/* Mobile Dropdown */}
+      {menuOpen && (
+        <div className="md:hidden mt-3 px-4 space-y-2">
+          <Link to="/" className={isActive("/")}>Home</Link>
+          {user && token && (
             <>
-              <Link to="/dashboard" className="block hover:text-yellow-300">
-                Dashboard
-              </Link>
-              <button
-                onClick={logout}
-                className="block w-full text-left bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm text-white"
-              >
-                Logout
-              </button>
+              <Link to="/players" className={isActive("/players")}>Players</Link>
+              <Link to="/dashboard" className={isActive("/dashboard")}>Dashboard</Link>
+              <Link to={`/players/${user.id}`} className={isActive(`/players/${user.id}`)}>My Profile</Link>
+              <button onClick={handleLogout} className="text-red-600">Logout</button>
             </>
-          ) : (
+          )}
+          {!user && !token && (
             <>
-              <Link to="/login" className="block hover:text-yellow-300">
-                Login
-              </Link>
-              <Link to="/register" className="block hover:text-yellow-300">
-                Register
-              </Link>
+              <Link to="/login" className={isActive("/login")}>Login</Link>
+              <Link to="/register" className={isActive("/register")}>Register</Link>
             </>
           )}
         </div>
       )}
     </nav>
   );
-};
-
-export default Navbar;
+}
 

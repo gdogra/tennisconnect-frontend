@@ -1,12 +1,12 @@
 // src/App.jsx
-import React, { Suspense, lazy } from "react";
+import React, { useEffect, useState, Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import Navbar from "./Navbar";
 import { ToastProvider } from "./ToastContext";
+import Navbar from "./Navbar";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import "./App.css";
 
-// Lazy-loaded pages
+// Lazy-load pages
 const LandingPage = lazy(() => import("./LandingPage"));
 const Login = lazy(() => import("./Login"));
 const Register = lazy(() => import("./Register"));
@@ -14,7 +14,7 @@ const Dashboard = lazy(() => import("./Dashboard"));
 const PlayersList = lazy(() => import("./components/PlayersList"));
 const PlayerProfile = lazy(() => import("./components/PlayerProfile"));
 
-const AnimatedRoutes = () => {
+const AnimatedRoutes = ({ user, token }) => {
   const location = useLocation();
 
   return (
@@ -26,9 +26,7 @@ const AnimatedRoutes = () => {
           <Route path="/register" element={<Register />} />
           <Route
             path="/dashboard"
-            element={
-              localStorage.getItem("token") ? <Dashboard /> : <Navigate to="/login" />
-            }
+            element={user && token ? <Dashboard /> : <Navigate to="/login" />}
           />
           <Route path="/players" element={<PlayersList />} />
           <Route path="/players/:id" element={<PlayerProfile />} />
@@ -40,13 +38,36 @@ const AnimatedRoutes = () => {
 };
 
 const App = () => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Load user/token once at startup
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
+    if (storedUser && storedToken) {
+      setUser(JSON.parse(storedUser));
+      setToken(storedToken);
+    }
+    setLoading(false);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading TennisConnect...
+      </div>
+    );
+  }
+
   return (
     <Router>
       <ToastProvider>
         <div className="min-h-screen bg-gray-50 text-gray-900">
           <Navbar />
           <Suspense fallback={<div className="p-8">Loading...</div>}>
-            <AnimatedRoutes />
+            <AnimatedRoutes user={user} token={token} />
           </Suspense>
         </div>
       </ToastProvider>

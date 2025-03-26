@@ -26,10 +26,7 @@ export default function Dashboard() {
       setUser(JSON.parse(storedUser));
       setLoading(false);
     } else {
-      // Give it a tiny delay before redirecting to prevent false positives
-      setTimeout(() => {
-        navigate("/login");
-      }, 300);
+      setTimeout(() => navigate("/login"), 300);
     }
   }, [navigate]);
 
@@ -46,14 +43,17 @@ export default function Dashboard() {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">🎾 {user.first_name}'s Dashboard</h1>
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-  <div className="border p-4 bg-white shadow rounded">
-    <h2 className="text-xl font-bold text-green-600">✅ Dashboard Rendered</h2>
-    <p>Hello, {user?.first_name}</p>
-  </div>
-</div>
-    
-  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <MatchHistory />
+          <UpcomingMatches />
+          <PlayerRankings />
+          <ScheduledMatchesCalendar />
+          <SentChallenges />
+          <ReceivedChallenges />
+          <ChallengeForm />
+          <RecentActivity />
+        </div>
+      </div>
     </div>
   );
 }

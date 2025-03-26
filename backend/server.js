@@ -18,18 +18,20 @@ const pool = new Pool({
   ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
 });
 
-// ✅ Health check
+// ✅ Health Check
 app.get("/", (req, res) => {
   res.send("🎾 TennisConnect API is running!");
 });
 
-// ✅ Register new user
+// ✅ Register
 app.post("/register", async (req, res) => {
   const { first_name, last_name, email, phone, street, city, zip, skill_level, password } = req.body;
 
   try {
     const existingUser = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-    if (existingUser.rows.length > 0) return res.status(400).json({ error: "Email already exists" });
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -46,7 +48,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// ✅ Login user
+// ✅ Login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -57,11 +59,9 @@ app.post("/login", async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.rows[0].password);
     if (!validPassword) return res.status(400).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { id: user.rows[0].id, email: user.rows[0].email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ id: user.rows[0].id, email: user.rows[0].email }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
     res.json({
       token,
@@ -78,31 +78,76 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// ✅ List all players
-app.get("/players", async (req, res) => {
-  try {
-    const players = await pool.query("SELECT id, first_name, last_name, skill_level, city FROM users");
-    res.json(players.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ✅ View player profile
+// ✅ Get Player Profile
 app.get("/players/:id", async (req, res) => {
   try {
-    const player = await pool.query(
+    const result = await pool.query(
       "SELECT id, first_name, last_name, email, city, skill_level FROM users WHERE id = $1",
       [req.params.id]
     );
-    if (player.rows.length === 0) return res.status(404).json({ error: "Player not found" });
-    res.json(player.rows[0]);
+    if (result.rows.length === 0) return res.status(404).json({ error: "Player not found" });
+    res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ Fetch upcoming matches
+// ✅ Get All Players
+app.get("/players", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id, first_name, last_name, skill_level, city FROM users");
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Match History
+app.get("/users/:id/history", async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const result = await pool.query(
+      `SELECT m.id, m.match_date, m.location,
+              u.first_name AS opponent,
+              m.player1_score, m.player2_score
+       FROM matches m
+       JOIN users u ON (
+         u.id = CASE
+           WHEN m.player1_id = $1 THEN m.player2_id
+           ELSE m.player1_id
+         END
+       )
+       WHERE (m.player1_id = $1 OR m.player2_id = $1)
+         AND m.player1_score IS NOT NULL
+         AND m.player2_score IS NOT NULL
+         AND m.cancelled = FALSE
+       ORDER BY m.match_date DESC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("❌ Error fetching match history:", err.message);
+    res.status(500).json({ error: "Failed to fetch match history" });
+  }
+});
+
+// ✅ Player Rankings
+app.get("/dashboard/player-rankings", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, first_name, last_name, skill_level
+       FROM users
+       ORDER BY skill_level DESC, last_name ASC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Upcoming Matches
 app.get("/dashboard/upcoming-matches/:id", async (req, res) => {
   const userId = req.params.id;
 
@@ -120,15 +165,28 @@ app.get("/dashboard/upcoming-matches/:id", async (req, res) => {
        ORDER BY m.match_date ASC`,
       [userId]
     );
-
     res.json(result.rows);
   } catch (err) {
-    console.error("Error fetching upcoming matches:", err.message);
-    res.status(500).json({ error: "Failed to fetch upcoming matches" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ Submit score for a match
+// ✅ All Matches for Calendar
+app.get("/matches", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT m.*, sender.first_name AS sender_name, receiver.first_name AS receiver_name
+      FROM matches m
+      JOIN users sender ON m.sender_id = sender.id
+      JOIN users receiver ON m.receiver_id = receiver.id
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Submit Match Score
 app.put("/matches/:id/score", async (req, res) => {
   const matchId = req.params.id;
   const { score } = req.body;
@@ -141,22 +199,7 @@ app.put("/matches/:id/score", async (req, res) => {
   }
 });
 
-// ✅ Fetch all matches for calendar
-app.get("/matches", async (req, res) => {
-  try {
-    const results = await pool.query(`
-      SELECT m.*, sender.first_name AS sender_name, receiver.first_name AS receiver_name
-      FROM matches m
-      JOIN users sender ON m.sender_id = sender.id
-      JOIN users receiver ON m.receiver_id = receiver.id
-    `);
-    res.json(results.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 🚫 Disabled frontend serving to avoid ENOENT errors
+// Optional: Serve frontend (commented out during dev)
 // const path = require("path");
 // app.use(express.static(path.join(__dirname, "frontend", "dist")));
 // app.get("*", (req, res) => {

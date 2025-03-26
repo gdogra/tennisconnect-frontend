@@ -43,7 +43,7 @@ export default function UpcomingMatches() {
   });
 
   return (
-    <div className="border p-4 rounded shadow bg-white dark:bg-gray-800">
+    <div className="border p-4 rounded shadow bg-white">
       <h2
         className="text-xl font-semibold cursor-pointer flex justify-between items-center"
         onClick={() => setCollapsed(!collapsed)}
@@ -68,14 +68,21 @@ export default function UpcomingMatches() {
               </h3>
               {matchesOnSelectedDate.length > 0 ? (
                 <ul className="mt-2 space-y-2">
-                  {matchesOnSelectedDate.map((match) => (
-                    <li
-                      key={match.id}
-                      className="bg-blue-100 dark:bg-blue-900 p-2 rounded"
-                    >
-                      vs {match.opponent} at {match.location} ({match.city})
-                    </li>
-                  ))}
+                  {matchesOnSelectedDate.map((match) => {
+                    const initials = match.opponent?.split(" ").map(n => n[0]).join("");
+                    return (
+                      <li key={match.id} className="bg-blue-100 p-2 rounded flex items-center gap-2">
+                        {match.opponent_avatar ? (
+                          <img src={match.opponent_avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold">
+                            {initials}
+                          </div>
+                        )}
+                        <span>vs {match.opponent} at {match.location} ({match.city})</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               ) : (
                 <p className="text-center text-gray-500">No matches on this day.</p>

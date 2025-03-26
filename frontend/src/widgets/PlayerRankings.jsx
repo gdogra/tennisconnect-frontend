@@ -52,7 +52,7 @@ export default function PlayerRankings() {
   };
 
   return (
-    <div className="border p-4 rounded shadow bg-white dark:bg-gray-800">
+    <div className="border p-4 rounded shadow bg-white">
       <h2
         className="text-xl font-semibold cursor-pointer flex justify-between items-center"
         onClick={() => setCollapsed(!collapsed)}
@@ -66,7 +66,30 @@ export default function PlayerRankings() {
           {loading && <p className="text-gray-500">Loading rankings...</p>}
           {error && <p className="text-red-500">{error}</p>}
           {!loading && !error && rankings.length > 0 ? (
-            <Bar data={chartData} />
+            <div className="flex gap-4">
+              <div className="w-1/2">
+                <Bar data={chartData} />
+              </div>
+              <ul className="w-1/2 max-h-64 overflow-y-auto space-y-2">
+                {rankings.map((player, idx) => {
+                  const initials = `${player.first_name[0]}${player.last_name[0]}`;
+                  return (
+                    <li key={player.id} className="flex items-center gap-3">
+                      {player.profile_picture ? (
+                        <img src={player.profile_picture} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold">
+                          {initials}
+                        </div>
+                      )}
+                      <span className="text-sm">
+                        {player.first_name} {player.last_name} — {Number(player.skill_level).toFixed(1)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           ) : (
             !loading && !error && <p>No player rankings to show.</p>
           )}

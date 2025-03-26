@@ -1,6 +1,6 @@
-// src/components/PlayersList.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AvatarHoverCard from "./AvatarHoverCard";
 
 export default function PlayersList() {
   const [players, setPlayers] = useState([]);
@@ -24,13 +24,12 @@ export default function PlayersList() {
 
   const handleChallenge = (opponent) => {
     alert(`🎾 Initiate challenge with ${opponent.first_name} ${opponent.last_name}`);
-    // Optionally: open challenge modal or redirect to ChallengeForm pre-filled
   };
 
   const filtered = players
-    .filter((p) => p.id !== user.id)
+    .filter((p) => p.id !== user.id && !isNaN(p.skill_level))
     .filter((p) =>
-      filter === "All" ? true : p.skill_level.toFixed(1) === filter
+      filter === "All" ? true : Number(p.skill_level).toFixed(1) === filter
     )
     .sort((a, b) => b.skill_level - a.skill_level);
 
@@ -55,11 +54,11 @@ export default function PlayersList() {
         </select>
       </div>
 
-      <table className="w-full table-auto border">
+      <table className="w-full table-auto border text-sm">
         <thead className="bg-gray-100">
           <tr>
             <th className="text-left px-3 py-2">#</th>
-            <th className="text-left px-3 py-2">Name</th>
+            <th className="text-left px-3 py-2">Player</th>
             <th className="text-left px-3 py-2">Skill Level</th>
             <th className="text-left px-3 py-2">City</th>
             <th className="text-left px-3 py-2">Action</th>
@@ -68,20 +67,16 @@ export default function PlayersList() {
         <tbody>
           {filtered.map((player, idx) => {
             const isSuggested =
-              Math.abs(player.skill_level - user.skill_level) <= 0.5;
+              Math.abs(Number(player.skill_level) - Number(user.skill_level)) <= 0.5;
             return (
-              <tr
-                key={player.id}
-                className="border-t hover:bg-gray-50 cursor-pointer"
-              >
+              <tr key={player.id} className="border-t hover:bg-gray-50">
                 <td className="px-3 py-2">{idx + 1}</td>
-                <td
-                  className="px-3 py-2 text-blue-600 underline"
-                  onClick={() => handleProfileClick(player.id)}
-                >
+                <td className="px-3 py-2 flex items-center gap-2 cursor-pointer text-blue-600 underline"
+                    onClick={() => handleProfileClick(player.id)}>
+                  <AvatarHoverCard player={player} size={32} />
                   {player.first_name} {player.last_name}
                 </td>
-                <td className="px-3 py-2">{player.skill_level}</td>
+                <td className="px-3 py-2">{Number(player.skill_level).toFixed(1)}</td>
                 <td className="px-3 py-2">{player.city}</td>
                 <td className="px-3 py-2">
                   {isSuggested ? (
