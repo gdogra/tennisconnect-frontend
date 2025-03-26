@@ -1,44 +1,103 @@
+// src/components/PlayersList.jsx
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function PlayersList() {
   const [players, setPlayers] = useState([]);
+  const [filter, setFilter] = useState("All");
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchPlayers = async () => {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5001/players", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok) setPlayers(data);
-    };
-    fetchPlayers();
-  }, []);
+    fetch("http://localhost:5001/players", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setPlayers(data))
+      .catch((err) => console.error("Failed to fetch players", err));
+  }, [token]);
+
+  const handleProfileClick = (id) => {
+    navigate(`/players/${id}`);
+  };
+
+  const handleChallenge = (opponent) => {
+    alert(`🎾 Initiate challenge with ${opponent.first_name} ${opponent.last_name}`);
+    // Optionally: open challenge modal or redirect to ChallengeForm pre-filled
+  };
+
+  const filtered = players
+    .filter((p) => p.id !== user.id)
+    .filter((p) =>
+      filter === "All" ? true : p.skill_level.toFixed(1) === filter
+    )
+    .sort((a, b) => b.skill_level - a.skill_level);
+
+  const skillOptions = ["All", "3.5", "4.0", "4.5", "5.0"];
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-semibold mb-4">🎾 Players List</h2>
-      <table className="min-w-full table-auto border-collapse">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border p-2">Name</th>
-            <th className="border p-2">Skill Level</th>
-            <th className="border p-2">City</th>
+    <div className="p-6 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">🎾 Players List</h1>
+
+      <div className="flex items-center gap-4 mb-4">
+        <label className="text-sm font-medium">Filter by Skill:</label>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="border px-2 py-1 rounded"
+        >
+          {skillOptions.map((lvl) => (
+            <option key={lvl} value={lvl}>
+              {lvl}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <table className="w-full table-auto border">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="text-left px-3 py-2">#</th>
+            <th className="text-left px-3 py-2">Name</th>
+            <th className="text-left px-3 py-2">Skill Level</th>
+            <th className="text-left px-3 py-2">City</th>
+            <th className="text-left px-3 py-2">Action</th>
           </tr>
         </thead>
         <tbody>
-          {players.map((p) => (
-            <tr key={p.id}>
-              <td className="border p-2">
-                <Link to={`/profile/${p.id}`} className="text-blue-600 hover:underline">
-                  {p.first_name} {p.last_name}
-                </Link>
-              </td>
-              <td className="border p-2">{p.skill_level}</td>
-              <td className="border p-2">{p.city}</td>
-            </tr>
-          ))}
+          {filtered.map((player, idx) => {
+            const isSuggested =
+              Math.abs(player.skill_level - user.skill_level) <= 0.5;
+            return (
+              <tr
+                key={player.id}
+                className="border-t hover:bg-gray-50 cursor-pointer"
+              >
+                <td className="px-3 py-2">{idx + 1}</td>
+                <td
+                  className="px-3 py-2 text-blue-600 underline"
+                  onClick={() => handleProfileClick(player.id)}
+                >
+                  {player.first_name} {player.last_name}
+                </td>
+                <td className="px-3 py-2">{player.skill_level}</td>
+                <td className="px-3 py-2">{player.city}</td>
+                <td className="px-3 py-2">
+                  {isSuggested ? (
+                    <button
+                      onClick={() => handleChallenge(player)}
+                      className="bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600"
+                    >
+                      Challenge
+                    </button>
+                  ) : (
+                    <span className="text-gray-400 text-sm">Too far</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

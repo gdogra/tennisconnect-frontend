@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
@@ -15,7 +16,6 @@ const PlayerProfile = lazy(() => import("./components/PlayerProfile"));
 
 const AnimatedRoutes = () => {
   const location = useLocation();
-  const token = localStorage.getItem("token");
 
   return (
     <TransitionGroup>
@@ -24,7 +24,12 @@ const AnimatedRoutes = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
+          <Route
+            path="/dashboard"
+            element={
+              localStorage.getItem("token") ? <Dashboard /> : <Navigate to="/login" />
+            }
+          />
           <Route path="/players" element={<PlayersList />} />
           <Route path="/players/:id" element={<PlayerProfile />} />
           <Route path="*" element={<div className="p-8">404 - Not Found</div>} />

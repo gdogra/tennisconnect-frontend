@@ -4,11 +4,12 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "../../index.css";
 import { toast } from "react-hot-toast";
+import MatchModal from "./MatchModal";
 
 export default function ScheduledMatchesCalendar() {
   const [matches, setMatches] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [rescheduling, setRescheduling] = useState(null);
+  const [selectedMatch, setSelectedMatch] = useState(null);
 
   const token = localStorage.getItem("token");
 
@@ -29,31 +30,7 @@ export default function ScheduledMatchesCalendar() {
   };
 
   const handleMatchClick = (match) => {
-    setRescheduling(match);
-  };
-
-  const handleReschedule = async () => {
-    if (!rescheduling || !selectedDate) return;
-    try {
-      const res = await fetch(`http://localhost:5001/matches/${rescheduling.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ date: selectedDate }),
-      });
-
-      if (res.ok) {
-        toast.success("📅 Match rescheduled successfully");
-        setRescheduling(null);
-        fetchMatches();
-      } else {
-        toast.error("❌ Failed to reschedule");
-      }
-    } catch (err) {
-      toast.error("❌ Network error");
-    }
+    setSelectedMatch(match);
   };
 
   useEffect(() => {
@@ -71,13 +48,14 @@ export default function ScheduledMatchesCalendar() {
             <li
               key={idx}
               className={`px-1 py-0.5 rounded ${
-                match.status === "completed"
+                match.completed
                   ? "bg-green-300"
-                  : "bg-yellow-200 cursor-pointer"
+                  : "bg-yellow-200 cursor-pointer hover:bg-yellow-300"
               }`}
               onClick={() => handleMatchClick(match)}
+              title={`vs ${match.opponent} at ${match.location}`}
             >
-              {match.opponent} ({match.status === "completed" ? match.score : "vs"})
+              {match.opponent} ({match.completed ? match.score : "vs"})
             </li>
           ))}
         </ul>
@@ -95,27 +73,13 @@ export default function ScheduledMatchesCalendar() {
         tileContent={tileContent}
       />
 
-      {rescheduling && (
-        <div className="mt-4 p-4 border rounded bg-gray-50">
-          <h3 className="text-lg font-bold mb-2">
-            Rescheduling match with {rescheduling.opponent}
-          </h3>
-          <p>New date: {selectedDate.toDateString()}</p>
-          <div className="mt-2 space-x-2">
-            <button
-              onClick={handleReschedule}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Confirm Reschedule
-            </button>
-            <button
-              onClick={() => setRescheduling(null)}
-              className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+      {selectedMatch && (
+        <MatchModal
+          match={selectedMatch}
+          onClose={() => setSelectedMatch(null)}
+          onMatchUpdated={fetchMatches}
+          token={token}
+        />
       )}
     </div>
   );
