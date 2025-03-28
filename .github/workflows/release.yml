@@ -1,4 +1,5 @@
-name: CI Release
+# .github/workflows/release.yml
+name: Release
 
 on:
   push:
@@ -7,25 +8,23 @@ on:
 
 jobs:
   release:
+    name: Semantic Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # required by semantic-release
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: npm
 
-      - name: Install deps
+      - name: 📦 Install dependencies
         run: npm ci
-        working-directory: ./frontend
 
-      - name: Release
+      - name: 🚀 Run semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: npx semantic-release
-        working-directory: ./frontend
 
