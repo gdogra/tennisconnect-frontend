@@ -1,4 +1,6 @@
 # React + Vite
+[![Semantic Release](https://img.shields.io/badge/release-semantic--release-brightgreen.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
+[![Latest Release](https://img.shields.io/github/v/release/gdogra/tennisconnect-frontend?style=flat-square)](https://github.com/gdogra/tennisconnect-frontend/releases)
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
