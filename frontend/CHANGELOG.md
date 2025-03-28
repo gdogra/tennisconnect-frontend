@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/gdogra/tennisconnect-frontend/compare/v1.1.1...v1.2.0) (2025-03-28)
+
+
+### Features
+
+* trigger v1.1.0 release with placeholder ([86585d6](https://github.com/gdogra/tennisconnect-frontend/commit/86585d6a1796a74c5bf41db518df33d1d89a2072))
+
 ## [1.1.1](https://github.com/gdogra/tennisconnect-frontend/compare/v1.1.0...v1.1.1) (2025-03-28)
 
 
