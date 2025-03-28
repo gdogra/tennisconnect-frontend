@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/gdogra/tennisconnect-frontend/compare/v1.1.0...v1.1.1) (2025-03-28)
+
+
+### Bug Fixes
+
+* **ci:** set working directory to frontend to find lock file ([ded649e](https://github.com/gdogra/tennisconnect-frontend/commit/ded649e7945caeb63704962799052d9897a369df))
+
 # [1.1.0](https://github.com/gdogra/tennisconnect-frontend/compare/v1.0.3...v1.1.0) (2025-03-28)
 
 
