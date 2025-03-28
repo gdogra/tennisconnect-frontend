@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/gdogra/tennisconnect-frontend/compare/v1.0.1...v1.0.2) (2025-03-28)
+
+
+### Bug Fixes
+
+* **ci:** set working directory to frontend for semantic-release ([203d307](https://github.com/gdogra/tennisconnect-frontend/commit/203d3074bbe411f962cad4af7ae21724260bca8c))
+
 ## [1.0.1](https://github.com/gdogra/tennisconnect-frontend/compare/v1.0.0...v1.0.1) (2025-03-28)
 
 
