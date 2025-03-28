@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/gdogra/tennisconnect-frontend/compare/v1.0.2...v1.0.3) (2025-03-28)
+
+
+### Bug Fixes
+
+* **ci:** grant required permissions for semantic-release ([7296333](https://github.com/gdogra/tennisconnect-frontend/commit/7296333dbfbbc6fb9c92e51562805c82921bce6c))
+
 ## [1.0.2](https://github.com/gdogra/tennisconnect-frontend/compare/v1.0.1...v1.0.2) (2025-03-28)
 
 
