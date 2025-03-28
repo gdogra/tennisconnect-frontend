@@ -1,20 +1,17 @@
-// vite.config.js
-const { defineConfig } = require('vite');
-const react = require('@vitejs/plugin-react');
-const { readFileSync } = require('fs');
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { version } from './package.json'; // ⬅️ Import app version
 
-const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
-
-module.exports = defineConfig({
+export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   define: {
-    __APP_VERSION__: JSON.stringify(pkg.version),
-  },
-  server: {
-    port: 5173,
-  },
-  build: {
-    outDir: 'dist',
+    __APP_VERSION__: JSON.stringify(version), // ⬅️ Inject global constant
   },
 });
 
