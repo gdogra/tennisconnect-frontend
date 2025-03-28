@@ -1,4 +1,4 @@
-name: Auto Release on Merge to Main
+name: Release
 
 on:
   push:
@@ -7,30 +7,25 @@ on:
 
 jobs:
   release:
+    name: Semantic Release
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout Repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: 🔧 Setup Node
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20.x
 
-      - name: 📥 Install Dependencies
+      - name: Install dependencies
         run: npm ci
         working-directory: ./frontend
 
-      - name: 🧪 Run Standard Release
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          npm run release
-        working-directory: ./frontend
-
-      - name: ✅ Push Tag + Changelog
-        run: |
-          git push --follow-tags origin main
+      - name: Release with semantic-release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npx semantic-release
         working-directory: ./frontend
 
