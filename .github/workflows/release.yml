@@ -5,9 +5,14 @@ on:
     branches:
       - main
 
+permissions:  # 👈 REQUIRED FOR SEMANTIC RELEASE
+  contents: write      # allow pushing git tags
+  issues: write        # allow creating release issues
+  pull-requests: write # allow commenting on PRs
+
 jobs:
   release:
-    name: Semantic Release
+    name: Release
     runs-on: ubuntu-latest
 
     defaults:
@@ -15,18 +20,19 @@ jobs:
         working-directory: frontend
 
     steps:
-      - name: ⬇️ Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: ⚙️ Use Node.js 20.x
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 20
+          cache: npm
 
-      - name: 📦 Install dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: 🚀 Run semantic-release
+      - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
