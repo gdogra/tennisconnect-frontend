@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/gdogra/tennisconnect-frontend/compare/v1.3.1...v1.3.2) (2025-03-28)
+
+
+### Bug Fixes
+
+* add tailwindcss-animate for CI build compatibility ([aba3650](https://github.com/gdogra/tennisconnect-frontend/commit/aba3650651d464212a596b62078df7264e660bc2))
+
 # [1.2.0](https://github.com/gdogra/tennisconnect-frontend/compare/v1.1.1...v1.2.0) (2025-03-28)
 
 
