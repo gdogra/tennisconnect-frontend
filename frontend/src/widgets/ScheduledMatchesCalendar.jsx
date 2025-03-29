@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import "../../index.css";
+import "../index.css";
 import AvatarHoverCard from "../components/AvatarHoverCard";
 import { motion, AnimatePresence } from "framer-motion";
 
