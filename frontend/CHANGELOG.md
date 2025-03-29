@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/gdogra/tennisconnect-frontend/compare/v1.3.2...v1.3.3) (2025-03-29)
+
+
+### Bug Fixes
+
+* remove invalid JSON comments from package.json ([75af984](https://github.com/gdogra/tennisconnect-frontend/commit/75af9841066a84e51cfb7ddbbcc3f1e40ac7597a))
+
 ## [1.3.2](https://github.com/gdogra/tennisconnect-frontend/compare/v1.3.1...v1.3.2) (2025-03-28)
 
 
