@@ -1,3 +1,10 @@
+## [1.3.4](https://github.com/gdogra/tennisconnect-frontend/compare/v1.3.3...v1.3.4) (2025-03-29)
+
+
+### Bug Fixes
+
+* add react-toastify to frontend dependencies ([f4c513b](https://github.com/gdogra/tennisconnect-frontend/commit/f4c513b73e463742d6bc535a4577276756dba60a))
+
 ## [1.3.3](https://github.com/gdogra/tennisconnect-frontend/compare/v1.3.2...v1.3.3) (2025-03-29)
 
 
