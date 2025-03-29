@@ -1,3 +1,10 @@
+## [1.3.5](https://github.com/gdogra/tennisconnect-frontend/compare/v1.3.4...v1.3.5) (2025-03-29)
+
+
+### Bug Fixes
+
+* add framer-motion for AvatarHoverCard animation ([c28bae9](https://github.com/gdogra/tennisconnect-frontend/commit/c28bae9b5625f1e545362ab6bf182f8fbb0b4af0))
+
 ## [1.3.4](https://github.com/gdogra/tennisconnect-frontend/compare/v1.3.3...v1.3.4) (2025-03-29)
 
 
