@@ -5,13 +5,9 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write      # required for pushing tags and creating releases
-  issues: write        # if using issue creation plugins
-  pull-requests: write # optional, if PRs are involved
-
 jobs:
   release:
+    name: Semantic Release
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -25,17 +21,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build project
+      - name: Build
         run: npm run build
 
-      - name: Release
+      - name: Semantic Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # auto-provided by GitHub
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}       # must be set in repo secrets
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
