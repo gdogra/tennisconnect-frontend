@@ -9,5 +9,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  server: {
+    proxy: {
+      "/challenges": "http://localhost:5000",
+      "/players": "http://localhost:5000",
+      "/users": "http://localhost:5000",
+      "/register": "http://localhost:5000",
+      "/login": "http://localhost:5000",
+    },
+  },
 });
 
