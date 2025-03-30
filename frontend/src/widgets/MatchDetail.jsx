@@ -5,7 +5,7 @@ import axios from "axios";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import toast from "react-toastify";
+import { toast } from "react-toastify";
 
 export default function MatchDetail() {
   const { id } = useParams();
