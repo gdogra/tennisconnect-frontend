@@ -1,168 +1,84 @@
 import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import AvatarHoverCard from "../components/AvatarHoverCard";
-import ScoreInputModal from "./ScoreInputModal"; // assumes modal exists
-import { toast } from "react-toastify";
-import { AnimatePresence, motion } from "framer-motion";
+import axios from "axios";
+import toast, { ToastContainer } from "react-toastify";
+import ChallengeCard from "./ChallengeCard";
 
-export default function ReceivedChallenges({ onRefresh }) {
+export default function ReceivedChallenges() {
   const [challenges, setChallenges] = useState([]);
-  const [collapsed, setCollapsed] = useState(false);
-  const [selectedChallenge, setSelectedChallenge] = useState(null);
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [showScoreModal, setShowScoreModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
-
-  const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
-    fetchChallenges();
+    const fetchReceivedChallenges = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const { data } = await axios.get(`/challenges/received/${user.id}`);
+        setChallenges(data);
+      } catch (err) {
+        console.error("Failed to load received challenges:", err);
+        toast.error("Could not load received challenges.");
+      }
+    };
+
+    fetchReceivedChallenges();
   }, []);
 
-  const fetchChallenges = async () => {
+  const handleAccept = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5001/dashboard/received-challenges/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await axios.post(`/challenges/${id}/accept`, {
+        match_date: new Date(),
+        location: "TBD",
       });
-      const data = await res.json();
-      setChallenges(data);
+      toast.success("Challenge accepted!");
+      setChallenges((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, status: "accepted" } : c))
+      );
     } catch (err) {
-      console.error("Error loading received challenges:", err);
-      toast.error("Failed to load challenges.");
+      console.error(err);
+      toast.error("Failed to accept challenge.");
     }
   };
 
-  const handleAccept = (challenge) => {
-    setSelectedChallenge(challenge);
-    setShowCalendar(true);
+  const handleDecline = (id) => {
+    toast.info("Decline not implemented yet.");
   };
 
-  const confirmDateAndAccept = async () => {
-    if (!selectedDate || !selectedChallenge) return toast.warning("Select a date");
-
-    try {
-      const res = await fetch(`http://localhost:5001/challenges/${selectedChallenge.id}/accept`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ matchDate: selectedDate }),
-      });
-
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Accept failed");
-
-      toast.success("Challenge accepted and scheduled!");
-      setShowCalendar(false);
-      setSelectedChallenge(null);
-      fetchChallenges();
-      onRefresh?.(); // dashboard sync
-    } catch (err) {
-      console.error("Accept failed", err);
-      toast.error("Error accepting challenge.");
-    }
+  const handleSchedule = (id) => {
+    toast.info("Scheduling not implemented yet.");
   };
 
-  const handleScoreInput = (challenge) => {
-    setSelectedChallenge(challenge);
-    setShowScoreModal(true);
-  };
-
-  const submitScore = async (player1Score, player2Score) => {
-    try {
-      const res = await fetch(`http://localhost:5001/matches/${selectedChallenge.match_id}/score`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ player1Score, player2Score }),
-      });
-
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Score entry failed");
-
-      toast.success("Score submitted!");
-      setShowScoreModal(false);
-      setSelectedChallenge(null);
-      fetchChallenges();
-      onRefresh?.();
-    } catch (err) {
-      toast.error("Error submitting score.");
-    }
-  };
+  const filtered = challenges.filter((c) =>
+    filter === "all" ? true : c.status === filter
+  );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="rounded-xl border p-4 shadow-sm bg-white"
-    >
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">📥 Received Challenges</h2>
-        <Button variant="ghost" size="sm" onClick={() => setCollapsed(!collapsed)}>
-          {collapsed ? "Expand" : "Collapse"}
-        </Button>
-      </div>
+    <div>
+      <h2 className="text-xl font-semibold mb-2">Received Challenges</h2>
+      <select
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        className="mb-4 border px-2 py-1 rounded"
+      >
+        <option value="all">All</option>
+        <option value="pending">Pending</option>
+        <option value="accepted">Accepted</option>
+      </select>
 
-      <AnimatePresence>
-        {!collapsed && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {challenges.length === 0 ? (
-              <p className="text-muted-foreground mt-2">No challenges received.</p>
-            ) : (
-              <ul className="divide-y mt-3">
-                {challenges.map((ch) => (
-                  <li key={ch.id} className="py-2 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <AvatarHoverCard user={ch.sender} />
-                      <div>
-                        <p className="font-medium">
-                          {ch.sender.first_name} → You
-                        </p>
-                        <p className="text-sm text-muted-foreground">{ch.location}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleAccept(ch)}>Accept</Button>
-                      <Button size="sm" variant="secondary" onClick={() => handleScoreInput(ch)}>Score</Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {showCalendar && (
-        <div className="mt-4 border rounded-xl p-4 shadow bg-gray-50">
-          <p className="mb-2 font-medium">Select Match Date:</p>
-          <Calendar selected={selectedDate} onSelect={setSelectedDate} />
-          <div className="flex justify-end mt-3 gap-2">
-            <Button onClick={() => setShowCalendar(false)} variant="ghost">Cancel</Button>
-            <Button onClick={confirmDateAndAccept}>Confirm</Button>
-          </div>
-        </div>
+      {filtered.length > 0 ? (
+        filtered.map((challenge) => (
+          <ChallengeCard
+            key={challenge.id}
+            challenge={challenge}
+            onAccept={handleAccept}
+            onDecline={handleDecline}
+            onSchedule={handleSchedule}
+            isReceived
+          />
+        ))
+      ) : (
+        <p className="text-sm text-gray-500">No received challenges.</p>
       )}
-
-      {showScoreModal && selectedChallenge && (
-        <ScoreInputModal
-          matchId={selectedChallenge.match_id}
-          onClose={() => setShowScoreModal(false)}
-          onSubmit={submitScore}
-        />
-      )}
-    </motion.div>
+      <ToastContainer />
+    </div>
   );
 }
 
