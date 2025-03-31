@@ -1,8 +1,8 @@
 // src/widgets/PlayersList.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AvatarHoverCard from "./AvatarHoverCard";
-import ChallengeModal from "../components/ChallengeModal";
+import AvatarHoverCard from "@/components/ui/AvatarHoverCard";
+import ChallengeModal from "@/components/ChallengeModal";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
@@ -93,4 +93,4 @@ export default function PlayersList() {
     </div>
   );
 }
-	
+
