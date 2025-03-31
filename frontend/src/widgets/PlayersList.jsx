@@ -1,8 +1,8 @@
 // src/widgets/PlayersList.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AvatarHoverCard from "@/components/ui/AvatarHoverCard";
-import ChallengeModal from "@/components/ChallengeModal";
+import AvatarHoverCard from "../components/ui/AvatarHoverCard";
+import ChallengeModal from "../components/ChallengeModal";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
@@ -44,7 +44,7 @@ export default function PlayersList() {
   const handleChallenge = async (opponentId, date, location, phone) => {
     const user = JSON.parse(localStorage.getItem("user"));
     try {
-      await axios.post("http://localhost:5001/challenges", {
+      const res = await axios.post("http://localhost:5001/challenges", {
         sender_id: user.id,
         receiver_id: opponentId,
         match_date: date,
@@ -58,49 +58,36 @@ export default function PlayersList() {
     }
   };
 
-  if (loading) return <div className="text-center py-8">Loading players...</div>;
-  if (!players.length) return <div className="text-center text-gray-500 py-8">No players found.</div>;
+  if (loading) return <div>Loading players...</div>;
 
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">🎾 Available Players</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {players.map((player, index) => (
+        {players.map((player) => (
           <motion.div
             key={player.id}
-            className="border rounded-xl p-4 shadow-sm bg-white"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05, duration: 0.3, ease: "easeInOut" }}
+            className="border rounded p-4 shadow-sm bg-white"
             whileHover={{ scale: 1.02 }}
           >
             <AvatarHoverCard player={player} />
             <div className="mt-2">
-              <div className="font-semibold">
-                {player.first_name} {player.last_name}
-              </div>
+              <div className="font-semibold">{player.first_name} {player.last_name}</div>
               <div className="text-sm text-gray-600">Skill: {player.skill_level}</div>
               <div className="text-sm text-gray-600">City: {player.city}</div>
               <div className="mt-2 flex gap-2">
-                <Button size="sm" onClick={() => navigate(`/profile/${player.id}`)}>
-                  View Profile
-                </Button>
-                <Button size="sm" onClick={() => setSelectedOpponent(player)}>
-                  Challenge
-                </Button>
+                <Button size="sm" onClick={() => navigate(`/profile/${player.id}`)}>View Profile</Button>
+                <Button size="sm" onClick={() => setSelectedOpponent(player)}>Challenge</Button>
               </div>
             </div>
           </motion.div>
         ))}
       </div>
-
       {selectedOpponent && (
         <ChallengeModal
           opponent={selectedOpponent}
           onClose={() => setSelectedOpponent(null)}
-          onSubmit={(date, location, phone) =>
-            handleChallenge(selectedOpponent.id, date, location, phone)
-          }
+          onSubmit={(date, location, phone) => handleChallenge(selectedOpponent.id, date, location, phone)}
         />
       )}
     </div>
