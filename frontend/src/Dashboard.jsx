@@ -1,15 +1,14 @@
-// src/Dashboard.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import MatchHistory from "./widgets/MatchHistory";
-import UpcomingMatches from "./widgets/UpcomingMatches";
-import PlayerRankings from "./widgets/PlayerRankings";
-import SentChallenges from "./widgets/SentChallenges";
-import ReceivedChallenges from "./widgets/ReceivedChallenges";
-import ChallengeForm from "./ChallengeForm";
-import ScheduledMatchesCalendar from "./widgets/ScheduledMatchesCalendar";
-import RecentActivity from "./widgets/RecentActivity";
-import Navbar from "./Navbar";
+import MatchHistory from "./widgets/MatchHistory.jsx";
+import UpcomingMatches from "./widgets/UpcomingMatches.jsx";
+import PlayerRankings from "./widgets/PlayerRankings.jsx";
+import SentChallenges from "./widgets/SentChallenges.jsx";
+import ReceivedChallenges from "./widgets/ReceivedChallenges.jsx";
+import ChallengeForm from "./ChallengeForm.jsx";
+import ScheduledMatchesCalendar from "./widgets/ScheduledMatchesCalendar.jsx";
+import RecentActivity from "./widgets/RecentActivity.jsx";
+import Navbar from "./Navbar.jsx";
 import { motion } from "framer-motion";
 
 export default function Dashboard() {
@@ -17,6 +16,9 @@ export default function Dashboard() {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const triggerRefresh = () => setRefreshKey((prev) => prev + 1);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -27,16 +29,21 @@ export default function Dashboard() {
       setUser(JSON.parse(storedUser));
       setLoading(false);
     } else {
-      setTimeout(() => navigate("/login"), 300);
+      setLoading(false);
     }
   }, [navigate]);
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
         Loading your dashboard...
       </div>
     );
+  }
+
+  if (!token || !user) {
+    navigate("/login");
+    return null;
   }
 
   const fadeIn = {
@@ -60,16 +67,16 @@ export default function Dashboard() {
             <PlayerRankings />
           </motion.div>
           <motion.div variants={fadeIn} initial="initial" animate="animate">
-            <ScheduledMatchesCalendar />
+            <ScheduledMatchesCalendar refreshTrigger={refreshKey} />
           </motion.div>
           <motion.div variants={fadeIn} initial="initial" animate="animate">
-            <SentChallenges />
+            <SentChallenges onActionComplete={triggerRefresh} />
           </motion.div>
           <motion.div variants={fadeIn} initial="initial" animate="animate">
-            <ReceivedChallenges />
+            <ReceivedChallenges onActionComplete={triggerRefresh} />
           </motion.div>
           <motion.div variants={fadeIn} initial="initial" animate="animate">
-            <ChallengeForm />
+            <ChallengeForm onSuccess={triggerRefresh} />
           </motion.div>
           <motion.div variants={fadeIn} initial="initial" animate="animate">
             <RecentActivity />
@@ -79,4 +86,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

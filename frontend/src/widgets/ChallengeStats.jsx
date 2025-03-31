@@ -1,11 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -30,9 +25,7 @@ export default function ChallengeStats() {
       .then(({ challengesSent, matchesPlayed }) => {
         const notPlayed = challengesSent - matchesPlayed;
         const conversionRate =
-          challengesSent > 0
-            ? ((matchesPlayed / challengesSent) * 100).toFixed(1)
-            : "0.0";
+          challengesSent > 0 ? ((matchesPlayed / challengesSent) * 100).toFixed(1) : "0.0";
 
         setData({
           chartData: {
@@ -93,4 +86,3 @@ export default function ChallengeStats() {
     </div>
   );
 }
-

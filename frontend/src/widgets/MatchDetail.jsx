@@ -49,9 +49,7 @@ export default function MatchDetail() {
       <Card className="p-4 space-y-2">
         <div>Date: {new Date(match.match_date).toLocaleDateString()}</div>
         <div>Location: {match.location}</div>
-        <div>
-          Score: {match.score ? match.score : "Not yet submitted"}
-        </div>
+        <div>Score: {match.score ? match.score : "Not yet submitted"}</div>
       </Card>
 
       <h3 className="text-xl font-semibold mt-6">Challenge History</h3>
@@ -73,9 +71,7 @@ export default function MatchDetail() {
               </div>
               <div>
                 Requested Date:{" "}
-                {item.preferred_date
-                  ? new Date(item.preferred_date).toLocaleDateString()
-                  : "N/A"}
+                {item.preferred_date ? new Date(item.preferred_date).toLocaleDateString() : "N/A"}
               </div>
             </motion.div>
           ))
@@ -84,4 +80,3 @@ export default function MatchDetail() {
     </div>
   );
 }
-

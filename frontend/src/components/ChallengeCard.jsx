@@ -5,8 +5,7 @@ import { Button } from "./ui/button";
 import { CalendarIcon, ClockIcon, XIcon, CheckIcon } from "lucide-react";
 
 export default function ChallengeCard({ challenge, type }) {
-  const opponent =
-    type === "sent" ? challenge.receiver : challenge.sender;
+  const opponent = type === "sent" ? challenge.receiver : challenge.sender;
 
   const name =
     opponent?.first_name && opponent?.last_name
@@ -17,9 +16,7 @@ export default function ChallengeCard({ challenge, type }) {
   const skillLevel = opponent?.skill_level ?? "N/A";
 
   const status = challenge?.status ?? "pending";
-  const date = challenge?.proposed_date
-    ? new Date(challenge.proposed_date)
-    : null;
+  const date = challenge?.proposed_date ? new Date(challenge.proposed_date) : null;
 
   const formatDate = date
     ? `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {
@@ -28,9 +25,7 @@ export default function ChallengeCard({ challenge, type }) {
       })}`
     : "Not scheduled";
 
-  const relativeTime = date
-    ? formatDistanceToNow(date, { addSuffix: true })
-    : null;
+  const relativeTime = date ? formatDistanceToNow(date, { addSuffix: true }) : null;
 
   const handleAccept = () => {
     console.log("Accept challenge:", challenge.id);
@@ -96,4 +91,3 @@ export default function ChallengeCard({ challenge, type }) {
     </div>
   );
 }
-

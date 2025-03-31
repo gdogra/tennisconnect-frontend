@@ -10,13 +10,8 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: {
-      "/challenges": "http://localhost:5000",
-      "/players": "http://localhost:5000",
-      "/users": "http://localhost:5000",
-      "/register": "http://localhost:5000",
-      "/login": "http://localhost:5000",
-    },
+    port: 5173,
+    open: true,
   },
 });
 

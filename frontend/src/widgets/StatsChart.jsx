@@ -10,14 +10,7 @@ import {
   Legend,
 } from "chart.js";
 
-ChartJS.register(
-  BarElement,
-  ArcElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend
-);
+ChartJS.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 export default function StatsChart() {
   const [matchData, setMatchData] = useState(null);
@@ -155,4 +148,3 @@ export default function StatsChart() {
     </div>
   );
 }
-

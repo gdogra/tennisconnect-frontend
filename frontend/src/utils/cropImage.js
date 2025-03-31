@@ -35,7 +35,9 @@ export default function getCroppedImg(imageSrc, pixelCrop, rotation = 0, filter 
       // Return as File
       canvas.toBlob((blob) => {
         if (!blob) return reject("Canvas is empty");
-        const file = new File([blob], `avatar-${Date.now()}.jpg`, { type: "image/jpeg" });
+        const file = new File([blob], `avatar-${Date.now()}.jpg`, {
+          type: "image/jpeg",
+        });
         resolve(file);
       }, "image/jpeg");
     };
@@ -43,4 +45,3 @@ export default function getCroppedImg(imageSrc, pixelCrop, rotation = 0, filter 
     image.onerror = (err) => reject(err);
   });
 }
-

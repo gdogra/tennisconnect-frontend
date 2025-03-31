@@ -74,7 +74,9 @@ export default function MatchModal({ match, onClose, onMatchUpdated, token }) {
           />
 
           <div className="flex justify-end gap-2">
-            <button onClick={onClose} className="text-gray-500">Cancel</button>
+            <button onClick={onClose} className="text-gray-500">
+              Cancel
+            </button>
             <button onClick={handleUpdate} className="bg-blue-500 text-white px-3 py-1 rounded">
               Save
             </button>
@@ -84,4 +86,3 @@ export default function MatchModal({ match, onClose, onMatchUpdated, token }) {
     </AnimatePresence>
   );
 }
-

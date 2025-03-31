@@ -18,8 +18,7 @@ const Register = () => {
   });
   const [error, setError] = useState("");
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,13 +49,9 @@ const Register = () => {
           onSubmit={handleSubmit}
           className="bg-white shadow-md rounded px-10 py-8 w-full max-w-xl"
         >
-          <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
-            🎾 Register
-          </h2>
+          <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">🎾 Register</h2>
           {error && (
-            <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-center">
-              {error}
-            </div>
+            <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-center">{error}</div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
@@ -111,4 +106,3 @@ const Register = () => {
 };
 
 export default Register;
-

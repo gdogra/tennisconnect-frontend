@@ -26,9 +26,7 @@ export default function MatchCalendar({ userId }) {
   const handleDateChange = (date) => {
     setSelectedDate(date);
     const formatted = date.toISOString().split("T")[0];
-    const filtered = matches.filter((match) =>
-      match.match_date.startsWith(formatted)
-    );
+    const filtered = matches.filter((match) => match.match_date.startsWith(formatted));
     setMatchesForDate(filtered);
   };
 
@@ -38,9 +36,7 @@ export default function MatchCalendar({ userId }) {
       <Calendar onChange={handleDateChange} value={selectedDate} />
       {selectedDate && (
         <div className="mt-4">
-          <h3 className="font-semibold text-lg">
-            Matches on {selectedDate.toDateString()}:
-          </h3>
+          <h3 className="font-semibold text-lg">Matches on {selectedDate.toDateString()}:</h3>
           {matchesForDate.length > 0 ? (
             <ul className="list-disc ml-6">
               {matchesForDate.map((m) => (
@@ -57,4 +53,3 @@ export default function MatchCalendar({ userId }) {
     </div>
   );
 }
-

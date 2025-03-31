@@ -27,11 +27,18 @@ export default function MatchHistoryDetail() {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-4">Match Detail: #{id}</h2>
-      <p><strong>Opponent:</strong> {match.opponent_name}</p>
-      <p><strong>Date:</strong> {match.date}</p>
-      <p><strong>Score:</strong> {match.score}</p>
-      <p><strong>Status:</strong> {match.status}</p>
+      <p>
+        <strong>Opponent:</strong> {match.opponent_name}
+      </p>
+      <p>
+        <strong>Date:</strong> {match.date}
+      </p>
+      <p>
+        <strong>Score:</strong> {match.score}
+      </p>
+      <p>
+        <strong>Status:</strong> {match.status}
+      </p>
     </div>
   );
 }
-

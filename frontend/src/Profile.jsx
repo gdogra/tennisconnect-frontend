@@ -12,7 +12,7 @@ export default function Profile() {
     street: "",
     city: "",
     zip: "",
-    skill_level: ""
+    skill_level: "",
   });
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function Profile() {
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -53,19 +53,65 @@ export default function Profile() {
       <h2 className="text-2xl font-bold mb-4 text-center">👤 My Profile</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <input name="first_name" value={formData.first_name} onChange={handleChange} placeholder="First Name" className="input" required />
-          <input name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Last Name" className="input" required />
+          <input
+            name="first_name"
+            value={formData.first_name}
+            onChange={handleChange}
+            placeholder="First Name"
+            className="input"
+            required
+          />
+          <input
+            name="last_name"
+            value={formData.last_name}
+            onChange={handleChange}
+            placeholder="Last Name"
+            className="input"
+            required
+          />
         </div>
-        <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" className="input" />
-        <input name="street" value={formData.street} onChange={handleChange} placeholder="Street" className="input" />
-        <input name="city" value={formData.city} onChange={handleChange} placeholder="City" className="input" />
-        <input name="zip" value={formData.zip} onChange={handleChange} placeholder="Zip Code" className="input" />
-        <input name="skill_level" value={formData.skill_level} onChange={handleChange} placeholder="Skill Level (e.g., 4.0)" className="input" />
-        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">
+        <input
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="Phone"
+          className="input"
+        />
+        <input
+          name="street"
+          value={formData.street}
+          onChange={handleChange}
+          placeholder="Street"
+          className="input"
+        />
+        <input
+          name="city"
+          value={formData.city}
+          onChange={handleChange}
+          placeholder="City"
+          className="input"
+        />
+        <input
+          name="zip"
+          value={formData.zip}
+          onChange={handleChange}
+          placeholder="Zip Code"
+          className="input"
+        />
+        <input
+          name="skill_level"
+          value={formData.skill_level}
+          onChange={handleChange}
+          placeholder="Skill Level (e.g., 4.0)"
+          className="input"
+        />
+        <button
+          type="submit"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full"
+        >
           Save Profile
         </button>
       </form>
     </div>
   );
 }
-

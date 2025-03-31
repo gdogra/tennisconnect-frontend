@@ -5,12 +5,7 @@ import { cn } from "@/lib/utils";
 
 import "react-day-picker/dist/style.css";
 
-export const Calendar = ({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}) => {
+export const Calendar = ({ className, classNames, showOutsideDays = true, ...props }) => {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -42,4 +37,3 @@ export const Calendar = ({
     />
   );
 };
-

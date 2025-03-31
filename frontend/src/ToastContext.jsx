@@ -25,8 +25,8 @@ export function ToastProvider({ children }) {
             toast.type === "success"
               ? "bg-green-500"
               : toast.type === "error"
-              ? "bg-red-500"
-              : "bg-gray-700"
+                ? "bg-red-500"
+                : "bg-gray-700"
           }`}
         >
           {toast.message}
@@ -35,4 +35,3 @@ export function ToastProvider({ children }) {
     </ToastContext.Provider>
   );
 }
-

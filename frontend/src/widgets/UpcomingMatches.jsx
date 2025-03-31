@@ -15,12 +15,9 @@ export default function UpcomingMatches() {
         const user = JSON.parse(localStorage.getItem("user"));
         const token = localStorage.getItem("token");
 
-        const res = await fetch(
-          `http://localhost:5001/dashboard/upcoming-matches/${user.id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await fetch(`http://localhost:5001/dashboard/upcoming-matches/${user.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         if (res.ok) {
           setMatches(data);
@@ -48,8 +45,7 @@ export default function UpcomingMatches() {
         className="text-xl font-semibold cursor-pointer flex justify-between items-center"
         onClick={() => setCollapsed(!collapsed)}
       >
-        📅 Upcoming Matches{" "}
-        <span>{collapsed ? "+" : "−"}</span>
+        📅 Upcoming Matches <span>{collapsed ? "+" : "−"}</span>
       </h2>
 
       {!collapsed && (
@@ -58,28 +54,36 @@ export default function UpcomingMatches() {
           {error && <p className="text-red-500">{error}</p>}
           {!loading && !error && (
             <>
-              <Calendar
-                onChange={setSelectedDate}
-                value={selectedDate}
-                className="mb-4 mx-auto"
-              />
+              <Calendar onChange={setSelectedDate} value={selectedDate} className="mb-4 mx-auto" />
               <h3 className="text-lg font-medium text-center">
                 Matches on {selectedDate.toDateString()}
               </h3>
               {matchesOnSelectedDate.length > 0 ? (
                 <ul className="mt-2 space-y-2">
                   {matchesOnSelectedDate.map((match) => {
-                    const initials = match.opponent?.split(" ").map(n => n[0]).join("");
+                    const initials = match.opponent
+                      ?.split(" ")
+                      .map((n) => n[0])
+                      .join("");
                     return (
-                      <li key={match.id} className="bg-blue-100 p-2 rounded flex items-center gap-2">
+                      <li
+                        key={match.id}
+                        className="bg-blue-100 p-2 rounded flex items-center gap-2"
+                      >
                         {match.opponent_avatar ? (
-                          <img src={match.opponent_avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                          <img
+                            src={match.opponent_avatar}
+                            alt="avatar"
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold">
                             {initials}
                           </div>
                         )}
-                        <span>vs {match.opponent} at {match.location} ({match.city})</span>
+                        <span>
+                          vs {match.opponent} at {match.location} ({match.city})
+                        </span>
                       </li>
                     );
                   })}
@@ -94,4 +98,3 @@ export default function UpcomingMatches() {
     </div>
   );
 }
-

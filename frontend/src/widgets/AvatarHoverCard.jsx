@@ -35,4 +35,3 @@ export default function AvatarHoverCard({ player, position }) {
     </motion.div>
   );
 }
-

@@ -1,83 +1,110 @@
+// src/widgets/ReceivedChallenges.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
-import ChallengeCard from "./ChallengeCard";
+import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
+import AvatarHoverCard from "./AvatarHoverCard";
+import ConfirmationModal from "../components/ConfirmationModal";
 
-export default function ReceivedChallenges() {
+export default function ReceivedChallenges({ userId, refreshDashboard }) {
   const [challenges, setChallenges] = useState([]);
-  const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [confirmAction, setConfirmAction] = useState(null);
 
-  useEffect(() => {
-    const fetchReceivedChallenges = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        const { data } = await axios.get(`/challenges/received/${user.id}`);
-        setChallenges(data);
-      } catch (err) {
-        console.error("Failed to load received challenges:", err);
-        toast.error("Could not load received challenges.");
-      }
-    };
-
-    fetchReceivedChallenges();
-  }, []);
-
-  const handleAccept = async (id) => {
+  const fetchChallenges = async () => {
     try {
-      await axios.post(`/challenges/${id}/accept`, {
-        match_date: new Date(),
-        location: "TBD",
-      });
-      toast.success("Challenge accepted!");
-      setChallenges((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, status: "accepted" } : c))
-      );
+      const res = await axios.get(`http://localhost:5001/challenges/received/${userId}`);
+      setChallenges(res.data);
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to accept challenge.");
+      console.error("Error fetching received challenges:", err);
+      toast.error("Failed to load received challenges");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDecline = (id) => {
-    toast.info("Decline not implemented yet.");
+  useEffect(() => {
+    fetchChallenges();
+  }, [userId]);
+
+  const handleAccept = async (challengeId) => {
+    try {
+      await axios.post(`http://localhost:5001/challenges/${challengeId}/accept`);
+      toast.success("Challenge accepted!");
+      fetchChallenges();
+      refreshDashboard();
+    } catch (err) {
+      console.error("Error accepting challenge:", err);
+      toast.error("Could not accept challenge");
+    }
   };
 
-  const handleSchedule = (id) => {
-    toast.info("Scheduling not implemented yet.");
+  const handleDecline = async (challengeId) => {
+    try {
+      await axios.post(`http://localhost:5001/challenges/${challengeId}/decline`);
+      toast.info("Challenge declined");
+      fetchChallenges();
+      refreshDashboard();
+    } catch (err) {
+      console.error("Error declining challenge:", err);
+      toast.error("Could not decline challenge");
+    }
   };
 
-  const filtered = challenges.filter((c) =>
-    filter === "all" ? true : c.status === filter
-  );
+  if (loading) return <div className="text-center py-4">Loading challenges...</div>;
+
+  if (challenges.length === 0) return <div className="text-gray-500 italic text-center">No received challenges.</div>;
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2">Received Challenges</h2>
-      <select
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        className="mb-4 border px-2 py-1 rounded"
-      >
-        <option value="all">All</option>
-        <option value="pending">Pending</option>
-        <option value="accepted">Accepted</option>
-      </select>
-
-      {filtered.length > 0 ? (
-        filtered.map((challenge) => (
-          <ChallengeCard
-            key={challenge.id}
-            challenge={challenge}
-            onAccept={handleAccept}
-            onDecline={handleDecline}
-            onSchedule={handleSchedule}
-            isReceived
-          />
-        ))
-      ) : (
-        <p className="text-sm text-gray-500">No received challenges.</p>
+      <h3 className="text-lg font-semibold mb-2">📥 Received Challenges</h3>
+      <AnimatePresence>
+        {challenges.map((ch) => (
+          <motion.div
+            key={ch.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="p-4 border rounded shadow-sm bg-white mb-3 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <AvatarHoverCard player={ch.sender} />
+              <div>
+                <div className="font-medium">{ch.sender?.first_name} {ch.sender?.last_name}</div>
+                <div className="text-sm text-gray-600">Skill: {ch.sender?.skill_level || 'N/A'}</div>
+                <div className="text-sm text-gray-600">📍 {ch.location || 'No location'}</div>
+                <div className="text-sm text-gray-600">📅 {ch.match_date || 'Not scheduled'}</div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmAction({ type: "accept", id: ch.id })}
+                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => setConfirmAction({ type: "decline", id: ch.id })}
+                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+              >
+                Decline
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+      {confirmAction && (
+        <ConfirmationModal
+          title={confirmAction.type === "accept" ? "Accept Challenge" : "Decline Challenge"}
+          message={`Are you sure you want to ${confirmAction.type} this challenge?`}
+          onCancel={() => setConfirmAction(null)}
+          onConfirm={() => {
+            if (confirmAction.type === "accept") handleAccept(confirmAction.id);
+            if (confirmAction.type === "decline") handleDecline(confirmAction.id);
+            setConfirmAction(null);
+          }}
+        />
       )}
-      <ToastContainer />
     </div>
   );
 }

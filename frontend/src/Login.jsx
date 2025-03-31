@@ -69,4 +69,3 @@ export default function Login({ setUser, setToken }) {
     </div>
   );
 }
-

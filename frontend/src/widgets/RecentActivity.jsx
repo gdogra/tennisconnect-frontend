@@ -42,8 +42,14 @@ export default function RecentActivity({ user }) {
               <strong>
                 {item.sender_first} {item.sender_last}
               </strong>{" "}
-              challenged <strong>{item.receiver_first} {item.receiver_last}</strong> –{" "}
-              <em className={`capitalize ${item.status === "pending" ? "text-yellow-600" : item.status === "accepted" ? "text-green-600" : "text-red-600"}`}>
+              challenged{" "}
+              <strong>
+                {item.receiver_first} {item.receiver_last}
+              </strong>{" "}
+              –{" "}
+              <em
+                className={`capitalize ${item.status === "pending" ? "text-yellow-600" : item.status === "accepted" ? "text-green-600" : "text-red-600"}`}
+              >
                 {item.status}
               </em>{" "}
               on {new Date(item.created_at).toLocaleDateString()}
@@ -54,4 +60,3 @@ export default function RecentActivity({ user }) {
     </div>
   );
 }
-

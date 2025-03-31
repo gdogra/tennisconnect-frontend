@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ChallengeList({ user }) {
   const [challenges, setChallenges] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchChallenges = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         const res = await fetch(`http://localhost:5001/challenges/${user?.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -19,10 +19,10 @@ export default function ChallengeList({ user }) {
         if (res.ok) {
           setChallenges(data);
         } else {
-          setError(data.error || 'Failed to fetch challenges');
+          setError(data.error || "Failed to fetch challenges");
         }
       } catch (err) {
-        setError('Server error');
+        setError("Server error");
       }
     };
 
@@ -58,4 +58,3 @@ export default function ChallengeList({ user }) {
     </div>
   );
 }
-

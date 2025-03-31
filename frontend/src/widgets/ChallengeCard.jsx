@@ -11,16 +11,8 @@ export default function ChallengeCard({
   onSchedule,
   isReceived = false,
 }) {
-  const {
-    id,
-    sender,
-    receiver,
-    location,
-    status,
-    skill_difference,
-    scheduled_date,
-    match_id,
-  } = challenge;
+  const { id, sender, receiver, location, status, skill_difference, scheduled_date, match_id } =
+    challenge;
 
   const opponent = isReceived ? sender : receiver;
   const opponentName = opponent?.first_name || "Unknown";
@@ -43,9 +35,7 @@ export default function ChallengeCard({
         </div>
         <span
           className={`text-sm px-2 py-1 rounded ${
-            status === "accepted"
-              ? "bg-green-100 text-green-800"
-              : "bg-yellow-100 text-yellow-800"
+            status === "accepted" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
           }`}
         >
           {status}
@@ -66,7 +56,12 @@ export default function ChallengeCard({
             <Button onClick={() => onDecline(id)} variant="ghost" size="sm" className="rounded-xl">
               <XIcon className="w-4 h-4" /> Decline
             </Button>
-            <Button onClick={() => onSchedule(id)} variant="outline" size="sm" className="rounded-xl">
+            <Button
+              onClick={() => onSchedule(id)}
+              variant="outline"
+              size="sm"
+              className="rounded-xl"
+            >
               <CalendarIcon className="w-4 h-4 mr-1" /> Schedule
             </Button>
           </>
@@ -79,7 +74,7 @@ export default function ChallengeCard({
             size="sm"
             variant="outline"
             className="rounded-xl"
-            onClick={() => window.location.href = `/dashboard/match-history/${match_id}`}
+            onClick={() => (window.location.href = `/dashboard/match-history/${match_id}`)}
           >
             View Match
           </Button>
@@ -88,4 +83,3 @@ export default function ChallengeCard({
     </motion.div>
   );
 }
-

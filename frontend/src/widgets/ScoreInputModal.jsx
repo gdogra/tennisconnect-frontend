@@ -78,4 +78,3 @@ export default function ScoreInputModal({ isOpen, onClose, matchId, onSubmit }) 
     </Dialog>
   );
 }
-

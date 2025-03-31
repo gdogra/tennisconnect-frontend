@@ -57,8 +57,7 @@ export default function PlayerRankings() {
         className="text-xl font-semibold cursor-pointer flex justify-between items-center"
         onClick={() => setCollapsed(!collapsed)}
       >
-        🏆 Player Rankings{" "}
-        <span>{collapsed ? "+" : "−"}</span>
+        🏆 Player Rankings <span>{collapsed ? "+" : "−"}</span>
       </h2>
 
       {!collapsed && (
@@ -76,14 +75,19 @@ export default function PlayerRankings() {
                   return (
                     <li key={player.id} className="flex items-center gap-3">
                       {player.profile_picture ? (
-                        <img src={player.profile_picture} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                        <img
+                          src={player.profile_picture}
+                          alt="avatar"
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold">
                           {initials}
                         </div>
                       )}
                       <span className="text-sm">
-                        {player.first_name} {player.last_name} — {Number(player.skill_level).toFixed(1)}
+                        {player.first_name} {player.last_name} —{" "}
+                        {Number(player.skill_level).toFixed(1)}
                       </span>
                     </li>
                   );
@@ -98,4 +102,3 @@ export default function PlayerRankings() {
     </div>
   );
 }
-
